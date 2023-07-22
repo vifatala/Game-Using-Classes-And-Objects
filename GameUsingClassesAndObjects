@@ -1,0 +1,203 @@
+class Store():
+  # To create a store, give it a name, slogan, type, address, managerp, size and since when it is opened.
+  def __init__(self, name, slogan, type, address, manager, size):
+   self.name = name
+   self.slogan = slogan
+   self.type = type
+   self.address = address
+   self.manager = manager
+   self.size = size
+   self.inventory = {}
+   self.money = 0
+
+  # Printing a store will tell you its name, its kind, its address, its manager and its size.
+  def __repr__(self):
+    return "{name} is a {size} {type} store managed by {manager}.\nThe slogan is: \"{slogan}\"\nLocation: {address}.".format(name=self.name, size=self.size, type=self.type, manager=self.manager, slogan=self.slogan, address=self.address)
+
+  # The store storage capacity is defined by the store's size.
+  def calcStorage(self):
+    if self.size == 'small':
+      storage = 5
+    else:
+      storage = 10
+
+    return storage
+
+  # To add a new item to the store's inventory you need to provide the item you are adding and the quantity of this item. If you have space in your inventory, it'll be added, otherwise, a message will show up.
+  def addItem(self, item, quantity):
+    if (self.size == 'small' and len(self.inventory) < self.calcStorage()) or (self.size == 'large' and len(self.inventory) < self.calcStorage()):
+      self.inventory[item.name] = [item, quantity]
+      print(item.name, "was added to {}'s inventory.".format(self.name))
+    else:
+      print("The store's inventory is already full!")
+
+  def sell(self, item, quantity, customer):
+    if item in self.inventory:
+      if self.inventory[item][-1] > quantity:
+        self.inventory[item][-1] = self.inventory[item][-1] - quantity
+        self.money += self.inventory[item][0].price * quantity
+        print("{} units of {} were sold to {} for ".format(quantity, item, customer.name) + str(self.inventory[item][0].price * quantity) + "g.")
+        if not item in customer.inventory:
+          customer.inventory[item] = quantity
+        else:
+          customer.inventory[item] += quantity
+        customer.money -= self.inventory[item][0].price * quantity
+      elif self.inventory[item][-1] == quantity:
+        self.money += self.inventory[item][0].price * quantity
+        self.inventory.pop(item)
+        print("All the units of {} were sold.".format(item))
+        if not item in customer.inventory:
+          customer.inventory[item] = quantity
+        else:
+          customer.inventory[item] += quantity
+          customer.money -= self.inventory[item][0].price * quantity
+      else:
+        print("We don't have this amount avaiable! Try a smaller quantity.")
+    else:
+      print("Item is not avaiable.")
+
+class Item():
+  # To create an item, give it a name, a description, and a price.
+  def __init__(self, name, description, price):
+   self.name = name
+   self.description = description
+   self.price = price
+
+  # Printing an item will tell you its name, its description, and its price.
+  def __repr__(self):
+    return "{description}, {price}g".format(description=self.description, price=self.price)
+
+class Customer():
+  # To create a customer, give it a name, an age, a pocket size, and their current location. The quantity of money is calculated by the person's age (just to make things more interesting)
+  def __init__(self, name, age, pocket, location='In the center of Pelican Town'):
+    self.name = name
+    self.age = age
+    self.pocket = pocket
+    self.money = age * 100
+    self.inventory = {}
+    self.location = location
+  
+  # Printing a customer will tell you their name, their age, their pocket size, and how much money they have.
+  def __repr__(self):
+    return "{} is {} years old, has a pocket size of {}, and {}g in the wallet.\nCurrent location: {}".format(self.name, self.age, self.pocket, self.money, self.location)
+
+  def buyItem(self, store, item, quantity):
+    print("{} wants to buy {} units of {} at {}.".format(self.name, quantity, item, store.name))
+    if self.location == store.address:
+      if item in store.inventory:
+        if (len(self.inventory) < self.pocket) or (len(self.inventory) <= self.pocket and item in self.inventory):
+          if self.money >= store.inventory[item][1] * quantity: 
+            store.sell(item, quantity, self)
+          else:
+            print("Insuficient money. {}g is missing ".format(self.name) + str(store.inventory[item][0].price * quantity - self.money) + "g.")
+        else:
+          print("{}'s inventory is already full!".format(self.name))
+      else:
+        print("There is not such an item over there.")
+    else:
+      print("{} is not in the same location as the store.".format(self.name))
+
+  def seeStoreInventory(self, store):
+    print("{} is looking at {}'s inventory.".format(self.name, store.name))
+    print(store.inventory)
+
+  def changeLocation(self):
+    self.location = input("Type new location: ")
+    print("\n{}'s current location has changed to: {}".format(self.name, self.location))
+        
+    
+# Stores
+stardrop = Store('The Stardrop Saloon', 'Hungry? Thirsty? I\'ve got just the thing!', 'food', 'In the center of Pelican Town', 'Gus', 'large')
+joja = Store('JojaMart', ' Joja Corporation will propel the Ferngill Republic toward a more prosperous future.', 'general', 'North of Blacksmith', 'Morris', 'large')
+pierre = Store('Pierre\'s General Store', 'If you\'re looking for seeds, my shop is the place to go!', 'general', 'North of Town Square', 'Pierre', 'small')
+
+
+
+# Items
+beer = Item('Beer', 'Drink in moderation', 400)
+banana = Item('Banana', 'A sweet, starchy tropical fruit', 260)
+salad = Item('Salad', 'A healthy garden salad', 220)
+
+# Customer
+nicolas = Customer('Nicolas', 1111111, 1)
+victor = Customer('Victor', 17, 3, 'In Arabia')
+kenia = Customer('Kenia', 1700, 5, 'Nao')
+
+# Testing
+print(stardrop)
+print("")
+stardrop.addItem(beer, 15)
+stardrop.addItem(salad, 30)
+print("")
+
+print(joja)
+print("")
+joja.addItem(banana, 77)
+joja.addItem(beer, 15)
+print("")
+
+print(pierre)
+print("")
+pierre.addItem(banana, 77)
+pierre.addItem(beer, 15)
+pierre.addItem(salad, 30)
+print("")
+
+print(nicolas)
+print("")
+print(victor)
+print("")
+print(kenia)
+   
+print("")
+nicolas.seeStoreInventory(stardrop)
+print("")
+kenia.seeStoreInventory(joja)
+print("")
+victor.seeStoreInventory(pierre)
+print("")
+nicolas.buyItem(stardrop, 'Banana', 78)
+print("")
+victor.buyItem(stardrop, 'Beer', 2)
+print("")
+victor.changeLocation()
+print("")
+print(victor.money)
+print(stardrop.money)
+print("")
+victor.buyItem(stardrop, 'Beer', 2)
+print("")
+print(victor.money)
+print(stardrop.money)
+nicolas.seeStoreInventory(stardrop)
+print("")
+# print("")
+victor.buyItem(stardrop, 'Banana', 2)
+print("")
+victor.buyItem(joja, 'Banana', 2)
+print("")
+victor.buyItem(pierre, 'Banana', 2)
+print("")
+victor.buyItem(joja, 'Beer', 2)
+print("")
+nicolas.buyItem(stardrop, 'Banana', 77)
+print("")
+# nicolas.seeStoreInventory(stardrop)
+kenia.buyItem(joja, 'Beer', 16)
+print("")
+kenia.changeLocation()
+print("")
+kenia.buyItem(joja, 'Beer', 16)
+print("")
+kenia.buyItem(joja, 'Beer', 15)
+print("")
+print(kenia.inventory)
+print("")
+print(joja.inventory)
+
+# print("")
+# print(nicolas)
+# print(nicolas.inventory)
+# print("")
+# print(victor)
+# print(victor.inventory)
